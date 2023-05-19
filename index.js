@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     let page = 1
     let next = document.querySelector('.next')
+    let previous = document.querySelector('.previous')
 
     await fetch("https://pokeapi.co/api/v2/pokemon/?limit=20&offset=0", "GET", printPokemon)
 
@@ -33,12 +34,21 @@ document.addEventListener('DOMContentLoaded', async function () {
     }}
     
     next.addEventListener('click', nextPage)
+    previous.addEventListener('click', previousPage)
 
     function nextPage(){
-        
+        document.getElementById('jokes').textContent = ''
         offset = page*20
         fetch("https://pokeapi.co/api/v2/pokemon/?limit=20&offset="+offset, "GET", printPokemon)
         page += 1
+    }
+
+    function previousPage(){
+        document.getElementById('jokes').textContent = ''
+        page -= 1
+        offset = (page-1)*20
+        fetch("https://pokeapi.co/api/v2/pokemon/?limit=20&offset="+offset, "GET", printPokemon)
+        
     }
 
 })
