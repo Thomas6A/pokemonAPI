@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div>
+        <ul id="jokes">
+        </ul>
+        <button class="previous">previous</button>
+        <button class="next">next</button><br>
+    </div>
+    <div class="filtre">
+        <input type="text" id="searchInput" placeholder="Rechercher par nom">
+        <button id="searchButton">Rechercher par nom</button><br>
+        <select id="searchType">
+            <option value="">Tous les types</option>
+            <option value="grass">Grass</option>
+            <option value="fire">Fire</option>
+            <option value="water">Water</option>
+        </select>
+        <button id="searchButtonType">Rechercher par type</button>
+        <p class="detail"></p>
+    </div>
+    
+    <script src="index.js"></script>
+</body>
+
+</html>
