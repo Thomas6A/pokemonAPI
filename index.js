@@ -3,52 +3,128 @@ document.addEventListener('DOMContentLoaded', async function () {
     let page = 1
     let next = document.querySelector('.next')
     let previous = document.querySelector('.previous')
+    document.getElementById('searchButton').addEventListener('click', searchPokemon);
+    document.getElementById('searchButtonType').addEventListener('click', searchType);
 
     await fetch("https://pokeapi.co/api/v2/pokemon/?limit=20&offset=0", "GET", printPokemon)
 
-    // fetchRandomJoke(request)
-
     function fetch(url, method, fun) {
-        //Initialisation de XHR
         const request = new XMLHttpRequest();
         request.addEventListener("load", fun)
-        //Spécifier le type d'appelle [ GET, POST, PUT, PATCH, DELETE ] et l'URL
         request.open(method, url);
-        //Spécification que je veux du JSON en type de retour
         request.setRequestHeader('Accept', "application/json")
-        //Permet d'envoyer la requêtes
         request.send()
     }
 
     function printPokemon() {
-        //Je parse/converti mon objet en JSON pour appeler les attributs de l'objet
         let result = JSON.parse(this.response);
-        //Je boucle sur le tableau de résultat
         for (let i = 0; i < result.results.length; i++) {
-            //Je crée mon <li></li>
             let li = document.createElement('li');
-            // Je met la valeut de ma blague dans mob li
-            li.innerHTML = result.results[i].name;
-            //Je push/pousser mon li dans mon Ul qui a pour id 'jokes'
+            let link = document.createElement('a')
+            link.href = "#"
+            link.innerHTML = 'id : ' + (i + 1 + 20 * (page - 1)) + ' Nom : ' + result.results[i].name;
+            link.addEventListener('click', function () {
+                detailPokemon(result.results[i].name)
+            })
+            li.append(link)
             document.getElementById('jokes').append(li);
-    }}
-    
+        }
+    }
+
     next.addEventListener('click', nextPage)
     previous.addEventListener('click', previousPage)
-
-    function nextPage(){
+    function nextPage() {
         document.getElementById('jokes').textContent = ''
-        offset = page*20
-        fetch("https://pokeapi.co/api/v2/pokemon/?limit=20&offset="+offset, "GET", printPokemon)
+        offset = page * 20
+        fetch("https://pokeapi.co/api/v2/pokemon/?limit=20&offset=" + offset, "GET", printPokemon)
         page += 1
     }
 
-    function previousPage(){
+    function previousPage() {
         document.getElementById('jokes').textContent = ''
         page -= 1
-        offset = (page-1)*20
-        fetch("https://pokeapi.co/api/v2/pokemon/?limit=20&offset="+offset, "GET", printPokemon)
-        
+        if (page <= 1) {
+            offset = 0
+            page = 1
+        } else {
+            offset = (page - 1) * 20
+        }
+        fetch("https://pokeapi.co/api/v2/pokemon/?limit=20&offset=" + offset, "GET", printPokemon)
+
     }
 
+    function detailPokemon(name) {
+        fetch("https://pokeapi.co/api/v2/pokemon/" + name, "GET", function () {
+            let pokemon = JSON.parse(this.response)
+            document.getElementsByClassName('detail')[0].innerHTML = ''
+            
+            document.getElementsByClassName('detail')[0].innerHTML += pokemon.name + '<br>'
+            for (let i = 0; i < pokemon.types.length; i++) {
+                document.getElementsByClassName('detail')[0].innerHTML += pokemon.types[i].type.name + ' '
+            }
+            document.getElementsByClassName('detail')[0].innerHTML += '<br>'
+            for (let i = 0; i < pokemon.stats.length; i++) {
+                document.getElementsByClassName('detail')[0].innerHTML += pokemon.stats[i].stat.name + ' : ' + pokemon.stats[i].base_stat + '<br>'
+            }
+            let img = document.createElement('img')
+            img.src = pokemon.sprites.front_default
+            document.getElementsByClassName('detail')[0].append(img)
+        })
+    }
+
+    function searchPokemon() {
+        let searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        if (searchTerm === '') {
+            document.getElementById('jokes').textContent = '';
+            fetch("https://pokeapi.co/api/v2/pokemon/?limit=20&offset=0", "GET", printPokemon);
+        } else {
+            fetch("https://pokeapi.co/api/v2/pokemon/?limit=1118", "GET", function () {
+                let result = JSON.parse(this.response);
+                let filteredResults = result.results.filter(pokemon => pokemon.name.includes(searchTerm));
+                document.getElementById('jokes').textContent = '';
+                filteredResults.forEach(pokemon => {
+                    let li = document.createElement('li');
+                    let link = document.createElement('a');
+                    link.href = "#";
+                    link.innerHTML = 'id : ' + (filteredResults.indexOf(pokemon) + 1) + ' Nom : ' + pokemon.name;
+                    link.addEventListener('click', function () {
+                        detailPokemon(pokemon.name);
+                    });
+                    li.append(link);
+                    document.getElementById('jokes').append(li);
+                });
+            });
+        }
+
+    }
+
+    function searchType() {
+        let searchTerm = document.getElementById('searchType').value.toLowerCase();
+        if (searchTerm === '') {
+            document.getElementById('jokes').textContent = '';
+            fetch("https://pokeapi.co/api/v2/pokemon/?limit=20&offset=0", "GET", printPokemon);
+        } else {
+            fetch("https://pokeapi.co/api/v2/type/" + searchTerm, "GET", function () {
+                let result = JSON.parse(this.response);
+                let pokemonUrls = result.pokemon.map(pokemon => pokemon.pokemon.url);
+                document.getElementById('jokes').textContent = '';
+                pokemonUrls.forEach(url => {
+                    fetch(url, "GET", function () {
+                        let pokemon = JSON.parse(this.response);
+                        let li = document.createElement('li');
+                        let link = document.createElement('a');
+                        link.href = "#";
+                        link.innerHTML = 'id : ' + pokemon.id + ' Nom : ' + pokemon.name;
+                        link.addEventListener('click', function () {
+                            detailPokemon(pokemon.name);
+                        });
+                        li.append(link);
+                        document.getElementById('jokes').append(li);
+                    });
+                });
+            });
+        }
+    }
+
+    
 })

@@ -1,18 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="index.css">
 </head>
-<body>
-    <p id="randomJoke"></p>
-    <ul id="jokes">
 
-    </ul>
-    <button class="previous">previous</button>
-    <button class="next">next</button>
+<body>
+    <div>
+        <ul id="jokes">
+        </ul>
+        <button class="previous">previous</button>
+        <button class="next">next</button><br>
+        <input type="text" id="searchInput" placeholder="Rechercher par nom">
+        <button id="searchButton">Rechercher par nom</button><br>
+        <select id="searchType">
+            <option value="">Tous les types</option>
+            <option value="grass">Grass</option>
+            <option value="fire">Fire</option>
+            <option value="water">Water</option>
+        </select>
+        <button id="searchButtonType">Rechercher par type</button>
+    </div>
+    <p class="detail"></p>
     <script src="index.js"></script>
 </body>
+
 </html>
