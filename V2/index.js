@@ -299,7 +299,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       statName[i] = stats[i].stat.name
       statNumber[i] = stats[i].base_stat
       if(prevStats.length === 0){
-        prevStatNumber[i] = 0
+        prevStatNumber[i] = null
       }else{
       prevStatNumber[i] = prevStats[i].base_stat
     }
