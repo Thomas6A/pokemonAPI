@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   let dernierPokemon = 0;
   let gen_actuelle = 0;
   let plus = document.getElementById("plus");
+  let ctx = document.getElementById("myChart");
+  let chartInstance;
+  let prevStats = []
 
   await fetch("https://pokeapi.co/api/v2/generation/1", "GET", printPokemon);
   await detailPokemon("bulbasaur");
@@ -31,7 +34,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (n === 0) {
         li.classList.add("selected");
       }
-
       document.getElementById("listeGen").append(li);
       n += 1;
     });
@@ -160,6 +162,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       } else {
         autrePokemon(pokemonId - 1, "avant");
       }
+
       let div = document.createElement("div");
       let h2 = document.createElement("h2");
       h2.textContent = result.name + " #" + pokemonId;
@@ -169,11 +172,20 @@ document.addEventListener("DOMContentLoaded", async function () {
       div.append(img);
       div.classList.add("principal");
       document.getElementById("detail").append(div);
-      if (pokemonId === 1010) {
-        autrePokemon(1, "apres");
-      } else {
-        autrePokemon(pokemonId + 1, "apres");
-      }
+
+      fetch(
+        "https://pokeapi.co/api/v2/pokemon-species?limit=10000",
+        "GET",
+        function () {
+          let result = JSON.parse(this.response);
+          taille = result.results.length;
+          if (pokemonId === taille) {
+            autrePokemon(1, "apres");
+          } else {
+            autrePokemon(pokemonId + 1, "apres");
+          }
+        }
+      );
 
       let divType = document.createElement("div");
       let h4 = document.createElement("h4");
@@ -248,6 +260,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       divWeakness.append(listWeakness);
       divWeakness.classList.add("Weak");
       document.getElementById("detail").append(divWeakness);
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+      chartStat(result.stats,prevStats);
+      prevStats = result.stats
     });
   }
 
@@ -272,5 +289,74 @@ document.addEventListener("DOMContentLoaded", async function () {
       document.getElementById("detail").append(div);
     });
   }
-  async function getAllPokemon(taille) {}
+
+  function chartStat(stats,prevStats) {
+    let statName = []
+    let statNumber = []
+    let prevStatNumber = []
+    console.log(prevStats);
+    for(i = 0; i<stats.length;i++){
+      statName[i] = stats[i].stat.name
+      statNumber[i] = stats[i].base_stat
+      if(prevStats.length === 0){
+        prevStatNumber[i] = 0
+      }else{
+      prevStatNumber[i] = prevStats[i].base_stat
+    }
+    }
+    console.log(statName);
+    console.log(statNumber);
+    let data = {
+      labels: statName,
+      datasets: [
+        {
+          label: "Nouveau Pokemon",
+          data: statNumber,
+          fill: true,
+          backgroundColor: "rgba(255, 99, 132, 0.2)",
+          borderColor: "#7ef3f7",
+          pointBackgroundColor: "#7ef3f7",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgb(255, 99, 132)",
+        },{
+          label: "Ancien Pokemon",
+          data: prevStatNumber,
+          fill: true,
+          backgroundColor: "rgba(255, 99, 132, 0.2)",
+          borderColor: "rgb(255, 99, 132)",
+          pointBackgroundColor: "rgb(255, 99, 132)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgb(255, 99, 132)",
+        }
+      ],
+    };
+
+    let config = {
+      type: "radar",
+      data: data,
+      options: {
+        elements: {
+          line: {
+            borderWidth: 3,
+          },
+        },
+        scales: {
+          r: {
+              angleLines: {
+                  display: true
+              },
+              suggestedMin: 0,
+              suggestedMax: 255,
+              pointLabels:{
+                color: '#ffcb0d',
+            },
+          },       
+      }
+      },
+    };
+
+    chartInstance = new Chart(ctx,config)
+  }
 });
