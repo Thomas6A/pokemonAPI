@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Pokedex Lite</h1>
+      <nav>
+        <p>Arduinomon</p>
+      </nav>
+    </header>
+    <main>
+      <div class="recherche">
+        <h2>Pokedex Lite</h2>
+        <label for="searchInput">Search for a Pokemon with name or ID</label>
+        <input type="text" id="searchInput" placeholder="Try Pikachu or 25" />
+        <button id="searchButton">Search</button>
+      </div>
+      <div id="formulaire">
+        <label for="firstName">Enter your first name</label>
+        <input type="text" id="firstName"/>
+        <label for="lastName">Enter your last name</label>
+        <input type="text" id="lastName"/>
+        <button id="connexion">Connexion</button>
+      </div>
+      <div id="equipe">
+      </div>
+      <div class="resultats">
+        <nav>
+          <ul id="listeGen">
+          </ul>
+        </nav>
+        <ul id="jokes"></ul>
+        <button id="plus">Plus</button>
+        
+      </div>
+      <div id="container">
+        <div id="detail">
+        </div>
+        <div id="cont_chart">
+            <canvas id="myChart"></canvas>
+          </div>
+      </div>
+    </main>
+    <script defer src="librairies/chartjs.js"></script>
+    <script defer src="index.js"></script>
+  </body>
+</html>
