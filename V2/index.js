@@ -1,18 +1,29 @@
 document.addEventListener("DOMContentLoaded", async function () {
+  //Liste des variables
   let dernierPokemon = 0;
   let gen_actuelle = 0;
   let plus = document.getElementById("plus");
   let ctx = document.getElementById("myChart");
   let chartInstance;
   let prevStats = []
+  let equipePokemon = [];
+  let connecter = false;
+  let formulaire = document.getElementById("formulaire")
+  let firstName = document.getElementById("firstName")
+  let lastName = document.getElementById("lastName")
+  let connexion = document.getElementById("connexion")
+  connexion.addEventListener("click", setCookie)
 
+  //Foction appellé au début
   await fetch("https://pokeapi.co/api/v2/generation/1", "GET", printPokemon);
   await detailPokemon("bulbasaur");
 
+  //Appelle de la foction pour rechercher
   document
     .getElementById("searchButton")
     .addEventListener("click", searchPokemon);
 
+  //Fonction pour afficher plus de pokemon
   plus.addEventListener("click", function () {
     fetch(
       "https://pokeapi.co/api/v2/generation/" + (gen_actuelle + 1),
@@ -21,6 +32,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     );
   });
 
+  //Fonction générant les générations
   await fetch("https://pokeapi.co/api/v2/generation", "GET", function () {
     let result = JSON.parse(this.response);
     let n = 0;
@@ -41,6 +53,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     generation(gen);
   });
 
+  //Fonction permettant de choisir la génération
   function generation(gen) {
     for (let i = 0; i < gen.length; i++) {
       gen[i].addEventListener("click", function () {
@@ -68,6 +81,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     request.send();
   }
 
+  //Fonction pour afficher la liste de pokemon
   function printPokemon() {
     let result = JSON.parse(this.response);
     result.pokemon_species.sort((a, b) => {
@@ -104,6 +118,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     dernierPokemon = fin_index;
   }
 
+  //Fonction permettant la recherche de pokemon
   function searchPokemon() {
     let searchTerm = document.getElementById("searchInput").value.toLowerCase();
     fetch(
@@ -144,6 +159,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     );
   }
 
+  //Fonction permettant l'affichage de détail d'un pokemon
   async function detailPokemon(name) {
     document.getElementById("detail").innerHTML = "";
     fetch("https://pokeapi.co/api/v2/pokemon/" + name, "GET", function () {
@@ -263,11 +279,34 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (chartInstance) {
         chartInstance.destroy();
       }
-      chartStat(result.stats,prevStats);
+      let ajout = document.createElement("button")
+      ajout.classList.add("ajoutEquipe")
+      ajout.innerHTML = "Ajouter dans l'équipe"
+      document.getElementById("detail").append(ajout);
+      ajout.addEventListener("click", function () {
+        if (equipePokemon.length >= 6) {
+          alert("Limite atteinte, Veuillez supprimer un pokemon")
+        } else if(connecter === false){
+          alert("Veuillez vous connectez")
+        }
+        else {
+          let pokemonEquipe = getCookie("pokemon")
+          let miseajour
+          if (pokemonEquipe) {
+            miseajour = pokemonEquipe + "," + name
+          } else {
+            miseajour = name
+          }
+          document.cookie = "pokemon=" + miseajour
+          checkCookie()
+        }
+      })
+      chartStat(result.stats, prevStats);
       prevStats = result.stats
     });
   }
 
+  //Fonction permettant d'afficher le pokemon précédent ou suivant
   function autrePokemon(id, string) {
     fetch("https://pokeapi.co/api/v2/pokemon/" + id, "GET", function () {
       let result = JSON.parse(this.response);
@@ -290,22 +329,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   }
 
-  function chartStat(stats,prevStats) {
+  //Affichage des stats
+  function chartStat(stats, prevStats) {
     let statName = []
     let statNumber = []
     let prevStatNumber = []
-    console.log(prevStats);
-    for(i = 0; i<stats.length;i++){
+    for (i = 0; i < stats.length; i++) {
       statName[i] = stats[i].stat.name
       statNumber[i] = stats[i].base_stat
-      if(prevStats.length === 0){
+      if (prevStats.length === 0) {
         prevStatNumber[i] = null
-      }else{
-      prevStatNumber[i] = prevStats[i].base_stat
+      } else {
+        prevStatNumber[i] = prevStats[i].base_stat
+      }
     }
-    }
-    console.log(statName);
-    console.log(statNumber);
     let data = {
       labels: statName,
       datasets: [
@@ -319,7 +356,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           pointBorderColor: "#fff",
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: "rgb(255, 99, 132)",
-        },{
+        }, {
           label: "Ancien Pokemon",
           data: prevStatNumber,
           fill: true,
@@ -344,19 +381,85 @@ document.addEventListener("DOMContentLoaded", async function () {
         },
         scales: {
           r: {
-              angleLines: {
-                  display: true
-              },
-              suggestedMin: 0,
-              suggestedMax: 255,
-              pointLabels:{
-                color: '#ffcb0d',
+            angleLines: {
+              display: true
             },
-          },       
-      }
+            suggestedMin: 0,
+            suggestedMax: 255,
+            pointLabels: {
+              color: '#ffcb0d',
+            },
+          },
+        }
       },
     };
 
-    chartInstance = new Chart(ctx,config)
+    chartInstance = new Chart(ctx, config)
   }
+
+  //Fonction permettant à l'utilisateur de se connecter
+  function setCookie() {
+    let firstNameValue = firstName.value;
+    let lastNameValue = lastName.value;
+    let cookieValue = "firstName = " + firstNameValue + " ; "
+    cookieValue += "SameSite=None;Secure=true;"
+    document.cookie = cookieValue;
+    cookieValue = "lastName = " + lastNameValue + " ; "
+    document.cookie = cookieValue;
+    checkCookie()
+  }
+
+  //Fonction permettant d'aller chercher une valeur du cookie
+  function getCookie(name) {
+    let cookieName = name + "="
+    let cookies = document.cookie.split(";")
+    for (let i = 0; i < cookies.length; i++) {
+      let cookie = cookies[i].trim();
+      if (cookie.indexOf(cookieName) === 0) {
+        return cookie.substring(cookieName.length);
+      }
+    }
+    return null
+  }
+
+  //Fonction permettant d'afficher l'equipe
+  function checkCookie() {
+    if (getCookie('firstName') !== null && getCookie('lastName') !== null) {
+      formulaire.style.display = "none"
+      connecter = true
+      document.getElementById("equipe").innerHTML = ''
+      let p = document.createElement("p")
+      p.innerHTML = "Equipe de " + getCookie('firstName') + " " + getCookie('lastName') + ": "
+      let pokemonList = getCookie('pokemon').split(",");
+      equipePokemon = pokemonList
+      if (pokemonList != '') {
+        for (let i = 0; i < pokemonList.length; i++) {
+          let span = document.createElement("span");
+          span.innerHTML = pokemonList[i] + " ";
+          let deleteButton = document.createElement("button");
+          deleteButton.innerHTML = "Supprimer";
+          deleteButton.setAttribute("data-pokemon", pokemonList[i]);
+          deleteButton.addEventListener("click", function () {
+            deletePokemonFromTeam(this.getAttribute("data-pokemon"));
+          });
+          span.appendChild(deleteButton);
+          p.append(span);
+        }
+      }
+      document.getElementById("equipe").append(p)
+    }
+  }
+
+  //Fonction permettant de supprimer un pokemon
+  function deletePokemonFromTeam(pokemon) {
+    let pokemonList = getCookie('pokemon').split(",");
+    let updatedTeam = pokemonList.filter((p) => p !== pokemon);
+    let miseajour = updatedTeam.join(",");
+    equipePokemon = miseajour
+    document.cookie = "pokemon=" + miseajour;
+    checkCookie();
+  }
+
+  await checkCookie()
+
 });
